@@ -19,14 +19,26 @@
 import {UserFactory} from '../../utilities/common/user-factory';
 import testConstants from '../../utilities/common/test-constants';
 import {BlogPostEditor} from '../../utilities/user/blog-post-editor';
+import * as path from 'path';
 
 const DEFAULT_SPEC_TIMEOUT_MSECS = testConstants.DEFAULT_SPEC_TIMEOUT_MSECS;
 const ROLES = testConstants.Roles;
 
-describe('Blog Editor', function () {
+let terminalImage: any;
+
+(async () => {
+  try {
+    const terminalImageModule = await import('terminal-image');
+    terminalImage = terminalImageModule.default;
+  } catch (error) {
+    console.error('Error importing terminal-image:', error);
+  }
+})();
+
+describe('Blog Editor', () => {
   let blogPostEditor: BlogPostEditor;
 
-  beforeAll(async function () {
+  beforeAll(async () => {
     blogPostEditor = await UserFactory.createNewUser(
       'blogPostEditor',
       'blog_post_editor@example.com',
@@ -36,7 +48,19 @@ describe('Blog Editor', function () {
 
   it(
     'should create and publish a blog post with thumbnail, title, body and tags.',
-    async function () {
+    async () => {
+      if (terminalImage) {
+        try {
+          console.log(
+            await terminalImage.file(
+              path.join(__dirname, 'blog-post-thumbnail-min.png')
+            )
+          );
+        } catch (error) {
+          console.error('Error using terminal-image:', error);
+        }
+      }
+
       await blogPostEditor.navigateToBlogDashboardPage();
       await blogPostEditor.publishNewBlogPost('This is a test blog post');
       await blogPostEditor.navigateToPublishTab();
@@ -54,7 +78,7 @@ describe('Blog Editor', function () {
 
   it(
     'should not create an empty blog post.',
-    async function () {
+    async () => {
       await blogPostEditor.navigateToBlogDashboardPage();
       await blogPostEditor.openBlogEditorPage();
       await blogPostEditor.updateTitleTo('');
@@ -64,7 +88,7 @@ describe('Blog Editor', function () {
     DEFAULT_SPEC_TIMEOUT_MSECS
   );
 
-  afterAll(async function () {
+  afterAll(async () => {
     await UserFactory.closeAllBrowsers();
   });
 });
