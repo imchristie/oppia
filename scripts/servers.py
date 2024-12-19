@@ -778,7 +778,7 @@ def managed_acceptance_tests_server(
         nodemodules_jest_bin_path,
         '%s' % os.path.join(puppeteer_acceptance_tests_dir_path, suite_name),
         '--config=./core/tests/puppeteer-acceptance-tests/jest.config.js', 
-        '--runInBand'
+        '--detectOpenHandles'
     ]
 
     # OK to use shell=True here because we are passing string literals,
