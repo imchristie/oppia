@@ -252,14 +252,14 @@ def main() -> None:
         acceptance_test_suites_from_directory
     )
 
-    # if len(acceptance_test_suites_difference) > 0:
-    #     raise Exception(
-    #         'Acceptance test suites and CI test suites are not in sync. '
-    #         'The following suites are not in sync: %s. Please update the '
-    #         'CI config file for acceptance tests at core/tests/ci-test-'
-    #         'suite-configs/acceptance.json with the suites listed above.'
-    #             % (json.dumps(acceptance_test_suites_difference))
-    #     )
+    if len(acceptance_test_suites_difference) > 0:
+        raise Exception(
+            'Acceptance test suites and CI test suites are not in sync. '
+            'The following suites are not in sync: %s. Please update the '
+            'CI config file for acceptance tests at core/tests/ci-test-'
+            'suite-configs/acceptance.json with the suites listed above.'
+                % (json.dumps(acceptance_test_suites_difference))
+        )
     print('Done!')
 
     print('Checking all e2e test modules are captured in wdio.conf.js...')
