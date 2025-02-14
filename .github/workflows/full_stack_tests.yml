@@ -72,67 +72,6 @@ jobs:
         uses: ./.github/actions/merge-develop-and-set-up-dependencies
       - name: Generate build files
         uses: ./.github/actions/generate-build-files
-  e2e_test:
-    needs: [check_test_suites_to_run, build]
-    runs-on: ubuntu-22.04
-    if: ${{ fromJSON(needs.check_test_suites_to_run.outputs.TEST_SUITES_TO_RUN).e2e.count > 0 }}
-    strategy:
-      matrix:
-        suite: ${{ fromJSON(needs.check_test_suites_to_run.outputs.TEST_SUITES_TO_RUN).e2e.suites }}
-    name: E2E (${{ matrix.suite.name }})
-    steps:
-      - name: Checkout repository so that local actions can be used
-        uses: actions/checkout@v4
-      - name: Merge develop and set up dependencies
-        uses: ./.github/actions/merge-develop-and-set-up-dependencies
-      - name: Generate build files
-        uses: ./.github/actions/generate-build-files
-      - name: Install Chrome
-        uses: ./.github/actions/install-chrome
-      - name: Install ffmpeg for wdio videos
-        run: |
-          sudo apt-get update
-          sudo apt install ffmpeg
-      - name: Generate modified suite name for artifacts
-        id: generate_suite_name_for_artifacts
-        # Replace slashes in the filename with hyphens.
-        run: |
-          SUITE_NAME=${{ matrix.suite.name }}
-          echo "MODIFIED_SUITE_NAME=${SUITE_NAME//\//_}" >> $GITHUB_OUTPUT
-      - name: Run E2E Test ${{ matrix.suite.name }}
-        uses: oppia/retry@a9fb265410e634c84ee90f3e87f323fde0541037
-        with:
-          max_attempts: 2
-          substrings_indicating_flaky_execution: ${{ matrix.suite.flaky_indicators || '' }}
-          command: >
-            VIDEO_RECORDING_IS_ENABLED=0
-            xvfb-run -a --server-args="-screen 0, 1285x1000x24"
-            python -m scripts.run_e2e_tests --skip-install
-            --skip-build --suite=${{ matrix.suite.name }} --prod_env
-      - name: Uploading webdriverio-video as Artifacts
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: webdriverio-video-${{steps.generate_suite_name_for_artifacts.outputs.MODIFIED_SUITE_NAME}}
-          path: /home/runner/work/oppia/webdriverio-video
-      - name: Uploading webdriverio screenshots as Artifacts
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: webdriverio-screenshots-${{steps.generate_suite_name_for_artifacts.outputs.MODIFIED_SUITE_NAME}}
-          path: /home/runner/work/oppia/webdriverio-screenshots
-      - name: Uploading webpack bundles as an artifact
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: webpack-bundles-${{steps.generate_suite_name_for_artifacts.outputs.MODIFIED_SUITE_NAME}}
-          path: /home/runner/work/oppia/oppia/build
-      - name: Report failure if failed on oppia/oppia develop branch
-        if: ${{ failure() && github.event_name == 'push' && github.repository == 'oppia/oppia' && github.ref == 'refs/heads/develop'}}
-        uses: ./.github/actions/send-webhook-notification
-        with:
-          message: "An E2E test failed on the upstream develop branch."
-          webhook-url: ${{ secrets.BUILD_FAILURE_ROOM_WEBHOOK_URL }}
   acceptance_test_with_python_installation:
     needs: [check_test_suites_to_run, build]
     runs-on: ubuntu-22.04
@@ -262,7 +201,6 @@ jobs:
     name: Check that all necessary tests pass
     needs:
       - check_test_suites_to_run
-      - e2e_test
       - acceptance_test_with_python_installation
       - lighthouse_accessibility_test
       - lighthouse_performance_test
