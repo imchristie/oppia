@@ -360,7 +360,6 @@ def main(args: Optional[List[str]] = None) -> None:
                 sys.exit(1)
 
             frontend_status = 0
-            ci_check_status = 0
             backend_status = 0
             js_or_ts_files = git_changes_utils.get_js_or_ts_files_from_diff(
                 files_to_lint)
