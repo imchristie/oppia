@@ -81,8 +81,6 @@ BACKEND_ASSOCIATED_TEST_FILE_CHECK_CMD: Final = [
     PYTHON_CMD, '-m', 'scripts.check_backend_associated_test_file']
 TYPESCRIPT_CHECKS_CMDS: Final = [
     PYTHON_CMD, '-m', 'scripts.run_typescript_checks']
-TESTS_ARE_CAPTURED_IN_CI_CHECK_CMDS: Final = [
-    PYTHON_CMD, '-m', 'scripts.check_tests_are_captured_in_ci']
 STRICT_TYPESCRIPT_CHECKS_CMDS: Final = [
     PYTHON_CMD, '-m', 'scripts.run_typescript_checks', '--strict_checks']
 GIT_IS_DIRTY_CMD: Final = 'git status --porcelain --untracked-files=no'
@@ -362,7 +360,6 @@ def main(args: Optional[List[str]] = None) -> None:
                 sys.exit(1)
 
             frontend_status = 0
-            ci_check_status = 0
             backend_status = 0
             js_or_ts_files = git_changes_utils.get_js_or_ts_files_from_diff(
                 files_to_lint)
@@ -377,14 +374,6 @@ def main(args: Optional[List[str]] = None) -> None:
                     frontend_test_cmds)
             if frontend_status != 0:
                 print('Push aborted due to failing frontend tests.')
-                sys.exit(1)
-            if does_diff_include_ci_config_or_test_files(files_to_lint):
-                ci_check_status = run_script_and_get_returncode(
-                    TESTS_ARE_CAPTURED_IN_CI_CHECK_CMDS)
-            if ci_check_status != 0:
-                print(
-                    'Push aborted due to failing tests are captured '
-                    'in ci check.')
                 sys.exit(1)
             python_test_files = (
                 git_changes_utils.get_python_dot_test_files_from_diff(
