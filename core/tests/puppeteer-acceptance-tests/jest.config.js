@@ -16,6 +16,8 @@
  * @fileoverview Jest config file.
  */
 
+const path = require('path');
+
 module.exports = {
   globals: {
     'ts-jest': {
@@ -25,12 +27,9 @@ module.exports = {
   testMatch: ['**/?(*.)+(spec).[t]s'],
   transform: {'^.+\\.ts?$': 'ts-jest'},
   preset: 'ts-jest',
-  testEnvironment: './custom-jest-environment.js',
+  testEnvironment: path.resolve(__dirname, 'custom-jest-environment.js'),
   testTimeout: 300000,
   bail: 0,
   transformIgnorePatterns: ['node_modules/(?!expect/)'],
-  moduleNameMapper: {
-    '^expect$': 'expect/build/index.js',
-    '^expect/(.*)$': 'expect/$1',
-  },
+  moduleDirectories: ['node_modules', __dirname],
 };
